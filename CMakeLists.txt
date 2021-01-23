@@ -48,6 +48,7 @@ include(cmake/GoogleTest.cmake)
 include(cmake/TestResources.cmake)
 include(cmake/Iconv.cmake)
 include(cmake/Jemalloc.cmake)
+include(cmake/h3.cmake)
 
 FIND_PACKAGE(OpenSSL 1.1.1 REQUIRED)
 FIND_PACKAGE(Snappy REQUIRED)
@@ -65,6 +66,7 @@ FILE(GLOB SRC_FILES src/*.cpp)
 FILE(GLOB TEST_FILES test/*.cpp)
 
 include_directories(include)
+include_directories(/usr/local/include)
 include_directories(${OPENSSL_INCLUDE_DIR})
 include_directories(${CURL_INCLUDE_DIR})
 include_directories(${ICU_INCLUDE_DIRS})
@@ -76,13 +78,16 @@ include_directories(${DEP_ROOT_DIR}/${ICONV_NAME}/include)
 include_directories(${DEP_ROOT_DIR}/${BRPC_NAME}/include)
 include_directories(${DEP_ROOT_DIR}/${BRAFT_NAME}/include)
 include_directories(${DEP_ROOT_DIR}/${JEMALLOC_NAME}/include/jemalloc)
+include_directories(${DEP_ROOT_DIR}/${H3_NAME}/build/src/h3lib/include)
 
+link_directories(/usr/local/lib)
 link_directories(${DEP_ROOT_DIR}/${GTEST_NAME}/googletest/build)
 link_directories(${DEP_ROOT_DIR}/${FOR_NAME})
 link_directories(${DEP_ROOT_DIR}/${H2O_NAME}/build)
 link_directories(${DEP_ROOT_DIR}/${ROCKSDB_NAME})
 link_directories(${DEP_ROOT_DIR}/${ICONV_NAME}/lib/.libs)
 link_directories(${DEP_ROOT_DIR}/${JEMALLOC_NAME}/lib)
+link_directories(${DEP_ROOT_DIR}/${H3_NAME}/build/lib)
 
 set(JEMALLOC_ROOT_DIR "${DEP_ROOT_DIR}/${JEMALLOC_NAME}")
 FIND_PACKAGE(Jemalloc REQUIRED)
@@ -130,7 +135,7 @@ else()
 endif()
 
 set(ICU_ALL_LIBRARIES ${ICU_I18N_LIBRARIES} ${ICU_LIBRARIES} ${ICU_DATA_LIBRARIES})
-set(CORE_LIBS h2o-evloop iconv ${CURL_LIBRARIES} for ${ICU_ALL_LIBRARIES} ${G3LOGGER_LIBRARIES}
+set(CORE_LIBS h2o-evloop iconv ${CURL_LIBRARIES} for h3 ${ICU_ALL_LIBRARIES} ${G3LOGGER_LIBRARIES}
               ${ROCKSDB_LIBS} ${OPENSSL_LIBRARIES} pthread dl ${STD_LIB})
 
 set(CORE_LIBS ${JEMALLOC_LIBRARIES} braft brpc ${LevelDB_LIBRARIES} glog
