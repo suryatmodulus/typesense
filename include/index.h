@@ -290,6 +290,8 @@ public:
                                      const std::unordered_map<std::string, field> & search_schema,
                                      const std::map<std::string, field> & facet_schema);
 
+    void refresh_search_schema(const std::unordered_map<std::string, field>& src_search_schema);
+
     const spp::sparse_hash_map<std::string, art_tree *> &_get_search_index() const;
 
     const spp::sparse_hash_map<std::string, num_tree_t*>& _get_numerical_index() const;
