@@ -109,7 +109,7 @@ public:
 
     Option<bool> delete_symlink(const std::string & symlink_name);
 
-    static const size_t DEFAULT_NUM_MEMORY_SHARDS = 4;
+    static constexpr const size_t DEFAULT_NUM_MEMORY_SHARDS = 4;
 
     static constexpr const char* NEXT_COLLECTION_ID_KEY = "$CI";
     static constexpr const char* SYMLINK_PREFIX = "$SL";

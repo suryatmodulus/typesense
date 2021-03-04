@@ -16,7 +16,7 @@ struct api_key_t {
     uint64_t expires_at;
 
     static const size_t PREFIX_LEN = 4;
-    static const uint64_t FAR_FUTURE_TIMESTAMP = 64723363199;  // year 4020
+    static constexpr const uint64_t FAR_FUTURE_TIMESTAMP = 64723363199;  // year 4020
 
     api_key_t() {
 
