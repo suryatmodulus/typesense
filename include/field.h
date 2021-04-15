@@ -507,7 +507,7 @@ struct facet_count_t {
     uint32_t doc_id;
     uint32_t array_pos;
 
-    std::unordered_map<uint32_t, token_pos_cost_t> query_token_pos;
+    spp::sparse_hash_set<uint64_t> query_token_hashes;
 };
 
 struct facet_stats_t {

@@ -171,6 +171,8 @@ private:
     // facet_field => (seq_id => values)
     spp::sparse_hash_map<std::string, spp::sparse_hash_map<uint32_t, facet_hash_values_t>*> facet_index_v3;
 
+    spp::sparse_hash_map<uint64_t, spp::sparse_hash_set<uint64_t>> token_to_facet_hash;
+
     // sort_field => (seq_id => value)
     spp::sparse_hash_map<std::string, spp::sparse_hash_map<uint32_t, int64_t>*> sort_index;
 
@@ -199,9 +201,9 @@ private:
                       const uint32_t* exclude_token_ids,
                       size_t exclude_token_ids_size,
                       size_t& num_tokens_dropped,
-                      const std::string & field, uint32_t *filter_ids, size_t filter_ids_length,
+                      const std::string & field, const uint32_t *filter_ids, const size_t filter_ids_length,
                       const std::vector<uint32_t>& curated_ids,
-                      std::vector<facet> & facets, const std::vector<sort_by> & sort_fields,
+                      const std::vector<sort_by> & sort_fields,
                       const int num_typos, std::vector<std::vector<art_leaf*>> & searched_queries,
                       Topster* topster, spp::sparse_hash_set<uint64_t>& groups_processed,
                       uint32_t** all_result_ids, size_t & all_result_ids_len,
@@ -210,10 +212,11 @@ private:
                       const std::vector<std::string>& group_by_fields,
                       const token_ordering token_order = FREQUENCY, const bool prefix = false,
                       const size_t drop_tokens_threshold = Index::DROP_TOKENS_THRESHOLD,
-                      const size_t typo_tokens_threshold = Index::TYPO_TOKENS_THRESHOLD) const;
+                      const size_t typo_tokens_threshold = Index::TYPO_TOKENS_THRESHOLD,
+                      const bool must_score_results = true) const;
 
     void search_candidates(const uint8_t & field_id,
-                           uint32_t* filter_ids, size_t filter_ids_length,
+                           const uint32_t* filter_ids, const size_t filter_ids_length,
                            const uint32_t* exclude_token_ids, size_t exclude_token_ids_size,
                            const std::vector<uint32_t>& curated_ids,
                            const std::vector<sort_by> & sort_fields, std::vector<token_candidates> & token_to_candidates,
@@ -223,7 +226,8 @@ private:
                            size_t & all_result_ids_len,
                            size_t& field_num_results,
                            const size_t typo_tokens_threshold,
-                           const size_t group_limit, const std::vector<std::string>& group_by_fields) const;
+                           const size_t group_limit, const std::vector<std::string>& group_by_fields,
+                           const bool must_score_results) const;
 
     void insert_doc(const int64_t score, art_tree *t, uint32_t seq_id,
                     const std::unordered_map<std::string, std::vector<uint32_t>> &token_to_offsets) const;
@@ -241,8 +245,6 @@ private:
                               const std::string & field, const uint8_t field_id,
                               const std::map<size_t, std::map<size_t, uint32_t>> & included_ids_map,
                               Topster* curated_topster, std::vector<std::vector<art_leaf*>> & searched_queries) const;
-
-    static uint64_t facet_token_hash(const field & a_field, const std::string &token);
 
     static void compute_facet_stats(facet &a_facet, uint64_t raw_value, const std::string & field_type);
 
@@ -295,6 +297,8 @@ public:
         combined ^= hash + 0x517cc1b727220a95 + (combined << 6) + (combined >> 2);
         return combined;
     }
+
+    static uint64_t facet_token_hash(const field & a_field, const std::string &token);
 
     static void concat_topster_ids(Topster* topster, spp::sparse_hash_map<uint64_t, std::vector<KV*>>& topster_ids);
 
@@ -364,7 +368,8 @@ public:
                 const size_t typo_tokens_threshold,
                 const size_t group_limit,
                 const std::vector<std::string>& group_by_fields,
-                const std::string& default_sorting_field) const;
+                const std::string& default_sorting_field,
+                const bool must_score_results) const;
 
     Option<uint32_t> remove(const uint32_t seq_id, const nlohmann::json & document);
 

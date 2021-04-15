@@ -911,7 +911,7 @@ Option<nlohmann::json> Collection::search(const std::string & query, const std::
 
                 acc_facet.result_map[facet_kv.first].doc_id = facet_kv.second.doc_id;
                 acc_facet.result_map[facet_kv.first].array_pos = facet_kv.second.array_pos;
-                acc_facet.result_map[facet_kv.first].query_token_pos = facet_kv.second.query_token_pos;
+                acc_facet.result_map[facet_kv.first].query_token_hashes = facet_kv.second.query_token_hashes;
             }
 
             if(this_facet.stats.fvcount != 0) {
@@ -1135,6 +1135,8 @@ Option<nlohmann::json> Collection::search(const std::string & query, const std::
 
         std::vector<facet_value_t> facet_values;
 
+        const field& facet_field = facet_schema.at(a_facet.field_name);
+
         for(size_t fi = 0; fi < max_facets; fi++) {
             // remap facet value hash with actual string
             auto & kv = facet_hash_counts[fi];
@@ -1158,28 +1160,21 @@ Option<nlohmann::json> Collection::search(const std::string & query, const std::
             }
 
             std::vector<std::string> tokens;
-            StringUtils::split(value, tokens, " ");
+            Tokenizer(value, true, false, !facet_field.is_string()).tokenize(tokens);
+
             std::stringstream highlightedss;
 
-            // invert query_pos -> token_pos
-            spp::sparse_hash_map<uint32_t, uint32_t> token_query_pos;
-            for(auto qtoken_pos: facet_count.query_token_pos) {
-                token_query_pos.emplace(qtoken_pos.second.pos, qtoken_pos.first);
-            }
-
             for(size_t i = 0; i < tokens.size(); i++) {
-                if(i != 0) {
-                    highlightedss << " ";
-                }
+                std::string normalized_token;
+                Tokenizer(tokens[i], true, true).tokenize(normalized_token);
 
-                if(token_query_pos.count(i) != 0) {
-                    size_t query_token_len = facet_query_tokens[token_query_pos[i]].size();
-                    // handle query token being larger than actual token (typo correction)
-                    query_token_len = std::min(query_token_len, tokens[i].size());
-                    const std::string & unmarked = tokens[i].substr(query_token_len, std::string::npos);
-                    highlightedss << highlight_start_tag <<
-                                    tokens[i].substr(0, query_token_len) <<
-                                    highlight_end_tag << unmarked;
+                // calculate hash without terminating null char
+                uint64_t token_hash = Index::facet_token_hash(facet_field, normalized_token);
+
+                //LOG(INFO) << "tokens[i]: " << tokens[i] << ", token_hash: " << token_hash;
+
+                if(facet_count.query_token_hashes.count(token_hash) != 0) {
+                    highlightedss << highlight_start_tag << tokens[i] << highlight_end_tag;
                 } else {
                     highlightedss << tokens[i];
                 }

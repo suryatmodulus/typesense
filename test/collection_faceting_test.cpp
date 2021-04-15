@@ -360,7 +360,7 @@ TEST_F(CollectionFacetingTest, FacetCountsBool) {
 
     coll1 = collectionManager.get_collection("coll1").get();
     if (coll1 == nullptr) {
-        coll1 = collectionManager.create_collection("coll1", 4, fields, "points").get();
+        coll1 = collectionManager.create_collection("coll1", 1, fields, "points").get();
     }
 
     nlohmann::json doc;
@@ -414,7 +414,7 @@ TEST_F(CollectionFacetingTest, FacetCountsHighlighting) {
 
     coll1 = collectionManager.get_collection("coll1").get();
     if(coll1 == nullptr) {
-        coll1 = collectionManager.create_collection("coll1", 4, fields, "points").get();
+        coll1 = collectionManager.create_collection("coll1", 1, fields, "points").get();
     }
 
     nlohmann::json doc;
