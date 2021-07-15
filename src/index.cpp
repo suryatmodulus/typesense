@@ -1736,7 +1736,10 @@ void Index::search(const std::vector<query_tokens_t>& field_query_tokens,
                     total_distances += ((100 - ((match_score >> 8) & 0xFF)) + 1) * weight;
                     verbatim_match_fields += (((match_score & 0xFF)) + 1);
 
-                    if(field_typos == 0 && tokens_found == field_query_tokens[i].q_include_tokens.size()) {
+                    uint64_t unique_tokens_found =
+                            int64_t(__builtin_popcount(existing_field_kvs[field_id]->token_bits)) - 1;
+
+                    if(field_typos == 0 && unique_tokens_found == field_query_tokens[i].q_include_tokens.size()) {
                         exact_match_fields++;
                     }
 
@@ -1828,7 +1831,7 @@ void Index::search(const std::vector<query_tokens_t>& field_query_tokens,
 
             //LOG(INFO) << "seq id: " << seq_id << ", aggregated_score: " << aggregated_score;
 
-            /*LOG(INFO) << "seq id: " << seq_id
+            LOG(INFO) << "seq id: " << seq_id
                       << ", exact_match_fields: " << exact_match_fields
                       << ", uniq_tokens_found: " << uniq_tokens_found
                       << ", min typo score: " << (255 - min_typos)
@@ -1836,7 +1839,7 @@ void Index::search(const std::vector<query_tokens_t>& field_query_tokens,
                       << ", typo score: " << (255 - total_typos)
                       << ", distance score: " << (100 - total_distances)
                       << ", verbatim_match_fields: " << verbatim_match_fields
-                      << ", aggregated_score: " << aggregated_score << ", token_bits: " << token_bits;*/
+                      << ", aggregated_score: " << aggregated_score << ", token_bits: " << token_bits;
 
             kvs[0]->scores[kvs[0]->match_score_index] = aggregated_score;
             topster->add(kvs[0]);
